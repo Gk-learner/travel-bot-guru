@@ -4,25 +4,63 @@ import Header from '@/components/Header';
 import TravelForm from '@/components/TravelForm';
 import TravelResults from '@/components/TravelResults';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import ApiKeyInput from '@/components/ApiKeyInput';
+import { generateTripsWithGemini } from '@/services/geminiService';
+import { useToast } from '@/components/ui/use-toast';
 
 const Index = () => {
   const [travelData, setTravelData] = React.useState<TravelFormData | null>(null);
   const [loading, setLoading] = React.useState(false);
+  const [apiKey, setApiKey] = React.useState<string | null>(null);
+  const [tripSuggestions, setTripSuggestions] = React.useState<TripSuggestion[]>([]);
+  const { toast } = useToast();
+  
+  // Handle API key changes
+  const handleApiKeyChange = (key: string) => {
+    setApiKey(key);
+  };
   
   // Handle form submission
-  const handleFormSubmit = (data: TravelFormData) => {
+  const handleFormSubmit = async (data: TravelFormData) => {
     setLoading(true);
     
-    // Simulate API call with setTimeout
-    setTimeout(() => {
+    try {
+      // Check if API key is available
+      if (!apiKey) {
+        toast({
+          title: "API key required",
+          description: "Please set your Gemini API key to generate travel suggestions.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Call Gemini API to generate trip suggestions
+      const suggestions = await generateTripsWithGemini(apiKey, data);
+      setTripSuggestions(suggestions);
       setTravelData(data);
+    } catch (error) {
+      console.error('Error generating trips:', error);
+      toast({
+        title: "Error generating trips",
+        description: error instanceof Error ? error.message : "Failed to generate trip suggestions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
+  };
+  
+  const handleReset = () => {
+    setTravelData(null);
+    setTripSuggestions([]);
   };
   
   return (
     <div className="min-h-screen w-full relative overflow-hidden flex flex-col">
       <AnimatedBackground />
+      <ApiKeyInput onApiKeyChange={handleApiKeyChange} />
       
       <div className="relative z-10 flex-1 flex flex-col">
         <Header />
@@ -40,7 +78,12 @@ const Index = () => {
                 <TravelForm onSubmit={handleFormSubmit} loading={loading} />
               </div>
             ) : (
-              <TravelResults data={travelData} onReset={() => setTravelData(null)} />
+              <TravelResults 
+                data={travelData} 
+                onReset={handleReset} 
+                tripSuggestions={tripSuggestions}
+                loading={loading}
+              />
             )}
           </div>
         </main>
