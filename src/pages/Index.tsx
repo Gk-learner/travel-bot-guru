@@ -102,6 +102,7 @@ export interface TravelFormData {
   budget: number;
   source: string;
   destination: string;
+  includeTransportation?: boolean;
 }
 
 export interface TripSuggestion {

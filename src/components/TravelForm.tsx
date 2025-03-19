@@ -10,6 +10,7 @@ import { CalendarIcon, Users, DollarSign, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import LocationInput from './LocationInput';
 import { TravelFormData } from '@/pages/Index';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface TravelFormProps {
   onSubmit: (data: TravelFormData) => void;
@@ -25,6 +26,7 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
     budget: 2000,
     source: '',
     destination: '',
+    includeTransportation: false,
   });
 
   const handleContinue = () => {
@@ -231,6 +233,22 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
               />
             </div>
           </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="transportation" 
+            checked={formData.includeTransportation}
+            onCheckedChange={(checked) => 
+              updateFormData('includeTransportation', checked === true)
+            }
+          />
+          <Label 
+            htmlFor="transportation" 
+            className="text-sm font-normal cursor-pointer"
+          >
+            Include transportation details (flight options)
+          </Label>
         </div>
         
         {!isBudgetValid && (

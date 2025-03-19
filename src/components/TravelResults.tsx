@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import TripCard from './TripCard';
 import { TravelFormData, TripSuggestion } from '@/pages/Index';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import FlightOptions from './FlightOptions';
 
 interface TravelResultsProps {
   data: TravelFormData;
@@ -129,6 +130,13 @@ const TravelResults: React.FC<TravelResultsProps> = ({
           </div>
         </div>
       </div>
+      
+      {/* Display flight options if requested */}
+      {data.includeTransportation && (
+        <div className="mb-8 animate-fade-in">
+          <FlightOptions travelData={data} />
+        </div>
+      )}
       
       {renderResults()}
     </div>
