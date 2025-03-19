@@ -102,7 +102,6 @@ export interface TravelFormData {
   budget: number;
   source: string;
   destination: string;
-  includeTransportation?: boolean; // Optional flag for transportation details
 }
 
 export interface TripSuggestion {
@@ -113,14 +112,4 @@ export interface TripSuggestion {
   duration: number;
   image: string;
   highlights: string[];
-}
-
-export interface FlightData {
-  airline: string;
-  flightNumber: string;
-  departureTime: string;
-  arrivalTime: string;
-  price: number;
-  stops: number;
-  duration: string;
 }

@@ -6,13 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Users, DollarSign, Loader2, PlaneTakeoff } from 'lucide-react';
+import { CalendarIcon, Users, DollarSign, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import LocationInput from './LocationInput';
 import { TravelFormData } from '@/pages/Index';
-import { Checkbox } from '@/components/ui/checkbox';
-import FlightSearchResults from './FlightSearchResults';
-import { searchFlights } from '@/services/flightService';
 
 interface TravelFormProps {
   onSubmit: (data: TravelFormData) => void;
@@ -28,21 +25,11 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
     budget: 2000,
     source: '',
     destination: '',
-    includeTransportation: false,
   });
-  
-  const [flightResults, setFlightResults] = useState<any[] | null>(null);
-  const [flightLoading, setFlightLoading] = useState(false);
-  const [flightError, setFlightError] = useState<string | null>(null);
 
   const handleContinue = () => {
     if (currentStep < 3) {
       setCurrentStep(currentStep + 1);
-      
-      // If moving to the last step and transportation is checked, fetch flight results
-      if (currentStep === 2 && formData.includeTransportation) {
-        handleFlightSearch();
-      }
     } else {
       onSubmit(formData);
     }
@@ -56,38 +43,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
 
   const updateFormData = (field: keyof TravelFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
-    // Clear flight data if transportation is unchecked
-    if (field === 'includeTransportation' && value === false) {
-      setFlightResults(null);
-      setFlightError(null);
-    }
-  };
-  
-  const handleFlightSearch = async () => {
-    if (!formData.includeTransportation || !formData.source || !formData.destination) {
-      return;
-    }
-    
-    setFlightLoading(true);
-    setFlightError(null);
-    
-    try {
-      const flights = await searchFlights(
-        formData.source,
-        formData.destination,
-        formData.startDate,
-        formData.endDate,
-        formData.travelers
-      );
-      
-      setFlightResults(flights);
-    } catch (error) {
-      console.error('Error searching for flights:', error);
-      setFlightError('Failed to search for flights. Please try again later.');
-    } finally {
-      setFlightLoading(false);
-    }
   };
 
   const isDateValid = formData.startDate && formData.endDate && formData.endDate >= formData.startDate;
@@ -277,39 +232,6 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
             </div>
           </div>
         </div>
-        
-        <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="includeTransportation" 
-            checked={formData.includeTransportation} 
-            onCheckedChange={(checked) => {
-              updateFormData('includeTransportation', checked === true);
-              if (checked === true && formData.source && formData.destination) {
-                handleFlightSearch();
-              }
-            }}
-          />
-          <div className="grid gap-1.5 leading-none">
-            <Label 
-              htmlFor="includeTransportation" 
-              className="flex items-center gap-1 cursor-pointer text-sm font-medium"
-            >
-              <PlaneTakeoff className="h-4 w-4" />
-              Include Flight Options
-            </Label>
-            <p className="text-sm text-muted-foreground">
-              Find flights based on your travel dates and locations
-            </p>
-          </div>
-        </div>
-        
-        {formData.includeTransportation && (
-          <FlightSearchResults 
-            flights={flightResults} 
-            isLoading={flightLoading} 
-            error={flightError} 
-          />
-        )}
         
         {!isBudgetValid && (
           <p className="text-sm text-destructive">Please enter valid traveler count and budget.</p>
