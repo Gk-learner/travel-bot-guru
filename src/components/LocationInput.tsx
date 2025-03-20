@@ -11,23 +11,55 @@ interface LocationInputProps {
   onChange: (value: string) => void;
 }
 
-// Mock location suggestions data
-const mockLocations = [
-  "New York, USA",
-  "London, UK",
-  "Paris, France",
-  "Tokyo, Japan",
-  "Sydney, Australia",
-  "Rome, Italy",
-  "Barcelona, Spain",
-  "Berlin, Germany",
-  "Singapore",
-  "Dubai, UAE",
-  "Amsterdam, Netherlands",
-  "Hong Kong",
-  "Istanbul, Turkey",
-  "Bangkok, Thailand",
-  "Bali, Indonesia"
+// Enhanced location suggestions data with more countries, cities, and airports
+const locationSuggestions = [
+  // Major global cities
+  "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA", "Miami, USA", "San Francisco, USA", "Seattle, USA", "Boston, USA", "Las Vegas, USA", "Atlanta, USA", "Dallas, USA", "Denver, USA", "Phoenix, USA", "San Diego, USA", "Austin, USA", "Philadelphia, USA", "Indianapolis, USA", "Nashville, USA", "New Orleans, USA", "Portland, USA",
+  "London, UK", "Manchester, UK", "Birmingham, UK", "Edinburgh, UK", "Glasgow, UK", "Liverpool, UK", "Bristol, UK", "Brighton, UK", "Oxford, UK", "Cambridge, UK",
+  "Paris, France", "Marseille, France", "Lyon, France", "Nice, France", "Bordeaux, France", "Toulouse, France", "Strasbourg, France", "Montpellier, France", "Lille, France", "Nantes, France",
+  "Berlin, Germany", "Munich, Germany", "Hamburg, Germany", "Frankfurt, Germany", "Cologne, Germany", "Düsseldorf, Germany", "Stuttgart, Germany", "Dresden, Germany", "Leipzig, Germany", "Hannover, Germany",
+  "Rome, Italy", "Milan, Italy", "Naples, Italy", "Turin, Italy", "Palermo, Italy", "Bologna, Italy", "Florence, Italy", "Venice, Italy", "Verona, Italy", "Genoa, Italy",
+  "Madrid, Spain", "Barcelona, Spain", "Valencia, Spain", "Seville, Spain", "Málaga, Spain", "Bilbao, Spain", "Alicante, Spain", "Zaragoza, Spain", "Granada, Spain", "Palma de Mallorca, Spain",
+  
+  // Asia
+  "Tokyo, Japan", "Osaka, Japan", "Kyoto, Japan", "Sapporo, Japan", "Fukuoka, Japan", "Nagoya, Japan", "Yokohama, Japan", "Hiroshima, Japan", "Kobe, Japan", "Nara, Japan",
+  "Beijing, China", "Shanghai, China", "Guangzhou, China", "Shenzhen, China", "Chengdu, China", "Xi'an, China", "Hangzhou, China", "Chongqing, China", "Nanjing, China", "Wuhan, China",
+  "Seoul, South Korea", "Busan, South Korea", "Incheon, South Korea", "Daegu, South Korea", "Daejeon, South Korea", "Gwangju, South Korea", "Suwon, South Korea", "Ulsan, South Korea", "Seongnam, South Korea", "Jeju, South Korea",
+  "Mumbai, India", "Delhi, India", "Bangalore, India", "Hyderabad, India", "Chennai, India", "Kolkata, India", "Pune, India", "Ahmedabad, India", "Jaipur, India", "Lucknow, India",
+  "Bangkok, Thailand", "Chiang Mai, Thailand", "Phuket, Thailand", "Pattaya, Thailand", "Krabi, Thailand", "Koh Samui, Thailand", "Hua Hin, Thailand", "Ayutthaya, Thailand", "Khon Kaen, Thailand", "Chiang Rai, Thailand",
+  "Singapore", "Kuala Lumpur, Malaysia", "Penang, Malaysia", "Johor Bahru, Malaysia", "Kuching, Malaysia", "Kota Kinabalu, Malaysia", "Malacca, Malaysia", "Ipoh, Malaysia", "Langkawi, Malaysia", "Cameron Highlands, Malaysia",
+  
+  // Middle East
+  "Dubai, UAE", "Abu Dhabi, UAE", "Sharjah, UAE", "Doha, Qatar", "Riyadh, Saudi Arabia", "Jeddah, Saudi Arabia", "Istanbul, Turkey", "Ankara, Turkey", "Antalya, Turkey", "Izmir, Turkey",
+  "Tel Aviv, Israel", "Jerusalem, Israel", "Cairo, Egypt", "Alexandria, Egypt", "Marrakech, Morocco", "Casablanca, Morocco", "Tunis, Tunisia", "Algiers, Algeria",
+  
+  // Australia & Oceania
+  "Sydney, Australia", "Melbourne, Australia", "Brisbane, Australia", "Perth, Australia", "Adelaide, Australia", "Gold Coast, Australia", "Cairns, Australia", "Darwin, Australia", "Hobart, Australia", "Canberra, Australia",
+  "Auckland, New Zealand", "Wellington, New Zealand", "Christchurch, New Zealand", "Queenstown, New Zealand", "Rotorua, New Zealand", "Hamilton, New Zealand", "Tauranga, New Zealand", "Dunedin, New Zealand", "Napier, New Zealand", "Nelson, New Zealand",
+  "Suva, Fiji", "Nadi, Fiji", "Honolulu, Hawaii", "Bora Bora, French Polynesia", "Tahiti, French Polynesia", "Nouméa, New Caledonia", "Port Vila, Vanuatu", "Apia, Samoa",
+  
+  // South America
+  "Rio de Janeiro, Brazil", "São Paulo, Brazil", "Brasília, Brazil", "Salvador, Brazil", "Fortaleza, Brazil", "Recife, Brazil", "Manaus, Brazil", "Florianópolis, Brazil", "Porto Alegre, Brazil", "Curitiba, Brazil",
+  "Buenos Aires, Argentina", "Córdoba, Argentina", "Mendoza, Argentina", "Bariloche, Argentina", "Santiago, Chile", "Valparaíso, Chile", "Lima, Peru", "Cusco, Peru", "Bogotá, Colombia", "Cartagena, Colombia",
+  "Medellín, Colombia", "Quito, Ecuador", "Guayaquil, Ecuador", "Montevideo, Uruguay", "Punta del Este, Uruguay", "La Paz, Bolivia", "Sucre, Bolivia", "Asunción, Paraguay", "Caracas, Venezuela",
+  
+  // Africa
+  "Cape Town, South Africa", "Johannesburg, South Africa", "Durban, South Africa", "Nairobi, Kenya", "Mombasa, Kenya", "Lagos, Nigeria", "Abuja, Nigeria", "Accra, Ghana", "Dakar, Senegal", "Zanzibar, Tanzania",
+  "Dar es Salaam, Tanzania", "Addis Ababa, Ethiopia", "Casablanca, Morocco", "Marrakech, Morocco", "Fez, Morocco", "Luxor, Egypt", "Sharm El Sheikh, Egypt", "Hurghada, Egypt", "Windhoek, Namibia", "Victoria Falls, Zimbabwe",
+  
+  // Eastern Europe
+  "Prague, Czech Republic", "Vienna, Austria", "Budapest, Hungary", "Warsaw, Poland", "Krakow, Poland", "Moscow, Russia", "St. Petersburg, Russia", "Kiev, Ukraine", "Bucharest, Romania", "Sofia, Bulgaria",
+  "Zagreb, Croatia", "Ljubljana, Slovenia", "Tallinn, Estonia", "Riga, Latvia", "Vilnius, Lithuania", "Belgrade, Serbia", "Bratislava, Slovakia", "Dubrovnik, Croatia", "Split, Croatia",
+  
+  // Caribbean
+  "Havana, Cuba", "Cancun, Mexico", "Punta Cana, Dominican Republic", "San Juan, Puerto Rico", "Nassau, Bahamas", "Montego Bay, Jamaica", "Bridgetown, Barbados", "St. George's, Grenada", "Castries, St. Lucia", "Oranjestad, Aruba",
+  "Willemstad, Curaçao", "Saint-Martin", "George Town, Cayman Islands", "Philipsburg, Sint Maarten",
+  
+  // Northern Europe
+  "Stockholm, Sweden", "Copenhagen, Denmark", "Oslo, Norway", "Helsinki, Finland", "Reykjavik, Iceland", "Gothenburg, Sweden", "Malmö, Sweden", "Bergen, Norway", "Turku, Finland", "Aarhus, Denmark",
+  
+  // Benelux
+  "Amsterdam, Netherlands", "Rotterdam, Netherlands", "Utrecht, Netherlands", "The Hague, Netherlands", "Brussels, Belgium", "Antwerp, Belgium", "Ghent, Belgium", "Bruges, Belgium", "Luxembourg City, Luxembourg"
 ];
 
 const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, onChange }) => {
@@ -55,18 +87,61 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
     };
   }, []);
 
-  // Filter locations based on input
+  // Filter locations based on input with improved matching
   const filterLocations = (input: string) => {
     setIsLoading(true);
     
     // Simulate API delay
     setTimeout(() => {
-      const filtered = mockLocations.filter(location => 
-        location.toLowerCase().includes(input.toLowerCase())
-      );
-      setSuggestions(filtered);
+      if (!input.trim()) {
+        setSuggestions([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const searchTerms = input.toLowerCase().split(' ').filter(term => term.length > 0);
+      
+      // Score-based fuzzy matching
+      const scoredLocations = locationSuggestions.map(location => {
+        const locationLower = location.toLowerCase();
+        let score = 0;
+        
+        // Exact match gets highest score
+        if (locationLower === input.toLowerCase()) {
+          score += 100;
+        }
+        
+        // Starts with input gets high score
+        if (locationLower.startsWith(input.toLowerCase())) {
+          score += 50;
+        }
+        
+        // Contains all search terms
+        const containsAllTerms = searchTerms.every(term => locationLower.includes(term));
+        if (containsAllTerms) {
+          score += 25;
+        }
+        
+        // Score based on how many terms match
+        searchTerms.forEach(term => {
+          if (locationLower.includes(term)) {
+            score += 10;
+          }
+        });
+        
+        return { location, score };
+      });
+      
+      // Filter and sort by score
+      const filteredLocations = scoredLocations
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .map(item => item.location)
+        .slice(0, 8); // Limit to top 8 matches
+      
+      setSuggestions(filteredLocations);
       setIsLoading(false);
-    }, 300);
+    }, 150); // Reduced delay for better responsiveness
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
