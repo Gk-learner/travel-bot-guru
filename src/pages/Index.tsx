@@ -7,12 +7,15 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import ApiKeyInput from '@/components/ApiKeyInput';
 import { generateTripsWithGemini } from '@/services/geminiService';
 import { useToast } from '@/components/ui/use-toast';
+import { ChatMessage, sendChatMessage } from '@/services/chatService';
 
 const Index = () => {
   const [travelData, setTravelData] = React.useState<TravelFormData | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [apiKey, setApiKey] = React.useState<string | null>(null);
   const [tripSuggestions, setTripSuggestions] = React.useState<TripSuggestion[]>([]);
+  const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
+  const [chatLoading, setChatLoading] = React.useState(false);
   const { toast } = useToast();
   
   // Handle API key changes
@@ -40,6 +43,16 @@ const Index = () => {
       const suggestions = await generateTripsWithGemini(apiKey, data);
       setTripSuggestions(suggestions);
       setTravelData(data);
+      
+      // Add initial assistant message to chat
+      setChatMessages([
+        {
+          id: `msg-welcome-${Date.now()}`,
+          content: "I've created some travel suggestions for you. Feel free to ask any follow-up questions about your trip!",
+          role: "assistant",
+          timestamp: new Date(),
+        }
+      ]);
     } catch (error) {
       console.error('Error generating trips:', error);
       toast({
@@ -52,9 +65,43 @@ const Index = () => {
     }
   };
   
+  // Handle sending chat messages
+  const handleSendMessage = async (content: string) => {
+    if (!apiKey) {
+      toast({
+        title: "API key required",
+        description: "Please set your Gemini API key to use the chat feature.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Add user message
+    const userMessage: ChatMessage = {
+      id: `msg-user-${Date.now()}`,
+      content,
+      role: "user",
+      timestamp: new Date(),
+    };
+    
+    setChatMessages((prev) => [...prev, userMessage]);
+    setChatLoading(true);
+    
+    try {
+      // Send message to Gemini API
+      const response = await sendChatMessage(content, apiKey);
+      setChatMessages((prev) => [...prev, response]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+  
   const handleReset = () => {
     setTravelData(null);
     setTripSuggestions([]);
+    setChatMessages([]);
   };
   
   return (
@@ -83,6 +130,10 @@ const Index = () => {
                 onReset={handleReset} 
                 tripSuggestions={tripSuggestions}
                 loading={loading}
+                chatMessages={chatMessages}
+                onSendMessage={handleSendMessage}
+                apiKey={apiKey}
+                chatLoading={chatLoading}
               />
             )}
           </div>

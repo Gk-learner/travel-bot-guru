@@ -6,21 +6,32 @@ import TripCard from './TripCard';
 import { TravelFormData, TripSuggestion } from '@/pages/Index';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import FlightOptions from './FlightOptions';
+import ChatBox from './ChatBox';
+import { ChatMessage } from '@/services/chatService';
 
 interface TravelResultsProps {
   data: TravelFormData;
   onReset: () => void;
   tripSuggestions: TripSuggestion[];
   loading: boolean;
+  chatMessages: ChatMessage[];
+  onSendMessage: (message: string) => Promise<void>;
+  apiKey: string | null;
+  chatLoading: boolean;
 }
 
 const TravelResults: React.FC<TravelResultsProps> = ({ 
   data, 
   onReset, 
   tripSuggestions,
-  loading 
+  loading,
+  chatMessages,
+  onSendMessage,
+  apiKey,
+  chatLoading
 }) => {
   const [showMore, setShowMore] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   
   // Calculate trip summary data
   const durationInDays = Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -138,7 +149,22 @@ const TravelResults: React.FC<TravelResultsProps> = ({
         </div>
       )}
       
-      {renderResults()}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          {renderResults()}
+        </div>
+        
+        <div className="lg:col-span-1">
+          <div className="glass-container rounded-lg overflow-hidden border h-[500px] flex flex-col">
+            <ChatBox 
+              messages={chatMessages} 
+              onSendMessage={onSendMessage} 
+              apiKey={apiKey}
+              loading={chatLoading}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
