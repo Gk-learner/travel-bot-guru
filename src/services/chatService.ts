@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 
 export type ChatMessage = {
@@ -8,23 +7,82 @@ export type ChatMessage = {
   timestamp: Date;
 };
 
-// This is a mock implementation that would be replaced with a real API call in production
+// Store chat history for context
+let chatHistory: ChatMessage[] = [];
+
 export const sendChatMessage = async (message: string, apiKey: string): Promise<ChatMessage> => {
-  // In a real implementation, this would call the Gemini API
-  // For now we'll simulate a response
-  
   try {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Add user message to history
+    const userMessage: ChatMessage = {
+      id: `msg-user-${Date.now()}`,
+      content: message,
+      role: "user",
+      timestamp: new Date(),
+    };
+    chatHistory.push(userMessage);
     
-    const response: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      content: generateMockResponse(message),
+    // Format the conversation history for the Gemini API
+    const messages = chatHistory.map(msg => ({
+      role: msg.role === "user" ? "user" : "model",
+      parts: [{ text: msg.content }]
+    }));
+    
+    // Add system message at the beginning
+    const systemMessage = {
+      role: "system",
+      parts: [{ text: "You are a helpful travel assistant who provides specific, detailed and concise answers about travel destinations, activities, accommodations, and other travel-related questions. Focus on providing practical travel advice." }]
+    };
+    
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [systemMessage, ...messages],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Gemini API error:", errorData);
+      throw new Error(errorData.error?.message || 'Error calling Gemini API');
+    }
+
+    const data = await response.json();
+    
+    if (!data.candidates || data.candidates.length === 0) {
+      throw new Error('No response from Gemini API');
+    }
+    
+    const responseText = data.candidates[0].content.parts[0].text;
+    
+    // Create assistant message
+    const assistantMessage: ChatMessage = {
+      id: `msg-assistant-${Date.now()}`,
+      content: responseText,
       role: "assistant",
       timestamp: new Date(),
     };
     
-    return response;
+    // Add to chat history for future context
+    chatHistory.push(assistantMessage);
+    
+    // Keep only the last 10 messages to manage context size
+    if (chatHistory.length > 10) {
+      chatHistory = chatHistory.slice(chatHistory.length - 10);
+    }
+    
+    return assistantMessage;
   } catch (error) {
     console.error("Error sending chat message:", error);
     toast({
@@ -34,28 +92,4 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
     });
     throw error;
   }
-};
-
-// Generate mock responses based on keywords in the user's message
-const generateMockResponse = (message: string): string => {
-  const lowercaseMessage = message.toLowerCase();
-  
-  if (lowercaseMessage.includes("hotel") || lowercaseMessage.includes("accommodation")) {
-    return "I recommend looking at hotels in the central areas of your destination. For New York, consider staying in Midtown for easy access to major attractions. Budget hotels start around $150 per night, while luxury options can range from $300-$500+.";
-  }
-  
-  if (lowercaseMessage.includes("restaurant") || lowercaseMessage.includes("food") || lowercaseMessage.includes("eat")) {
-    return "Your destination offers a wide variety of dining options. New York is known for its diverse food scene, from famous pizza places to Michelin-starred restaurants. I suggest trying local specialties and exploring different neighborhoods for authentic experiences.";
-  }
-  
-  if (lowercaseMessage.includes("attraction") || lowercaseMessage.includes("visit") || lowercaseMessage.includes("see")) {
-    return "Some must-see attractions at your destination include major landmarks and cultural sites. In New York, don't miss the Empire State Building, Central Park, Metropolitan Museum of Art, and the Statue of Liberty. Consider getting a city pass if you plan to visit multiple attractions.";
-  }
-  
-  if (lowercaseMessage.includes("transport") || lowercaseMessage.includes("getting around") || lowercaseMessage.includes("subway")) {
-    return "Public transportation is usually the most efficient way to get around in major cities. New York has an extensive subway system that runs 24/7. A weekly MetroCard might be cost-effective if you're staying for your full trip duration.";
-  }
-  
-  // Default response
-  return "Thank you for your question about your trip. Could you provide more details about what specific information you're looking for regarding your itinerary?";
 };
