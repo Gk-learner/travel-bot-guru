@@ -1,19 +1,24 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   FlightOption, 
   formatDuration, 
-  formatDateTime 
+  formatDateTime,
+  bookFlight
 } from '@/services/flightService';
 import { 
   Plane, 
   Clock, 
   DollarSign, 
   Leaf,
-  ArrowRight
+  ArrowRight,
+  Loader2,
+  Check,
+  XCircle
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 
 interface FlightDetailsProps {
   flightOption: FlightOption;
@@ -26,7 +31,11 @@ const FlightDetails: React.FC<FlightDetailsProps> = ({
   isSelected,
   onSelect
 }) => {
-  const { flights, layovers, total_duration, price, carbon_emissions } = flightOption;
+  const { flights, layovers, total_duration, price, carbon_emissions, booking_token } = flightOption;
+  const [booking, setBooking] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [confirmationCode, setConfirmationCode] = useState<string | null>(null);
+  const { toast } = useToast();
+  
   const firstFlight = flights[0];
   const lastFlight = flights[flights.length - 1];
   
@@ -45,6 +54,38 @@ const FlightDetails: React.FC<FlightDetailsProps> = ({
   };
   
   const carbonIndicator = getCarbonIndicator();
+
+  // Handle booking
+  const handleBooking = async () => {
+    try {
+      setBooking('loading');
+      const result = await bookFlight(booking_token);
+      
+      if (result.success) {
+        setBooking('success');
+        setConfirmationCode(result.confirmationCode || null);
+        toast({
+          title: "Booking Successful",
+          description: result.message,
+          variant: "default",
+        });
+      } else {
+        setBooking('error');
+        toast({
+          title: "Booking Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      setBooking('error');
+      toast({
+        title: "Booking Error",
+        description: "An unexpected error occurred while booking your flight.",
+        variant: "destructive",
+      });
+    }
+  };
   
   return (
     <div className={`border rounded-lg p-4 mb-4 transition-all ${isSelected ? 'border-primary' : 'border-border'}`}>
@@ -127,17 +168,66 @@ const FlightDetails: React.FC<FlightDetailsProps> = ({
         </div>
       </div>
       
-      {onSelect && (
-        <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-end">
+        {onSelect && (
           <Button 
             variant={isSelected ? "default" : "outline"} 
             onClick={onSelect}
-            className="min-w-32"
+            className="min-w-32 mr-2"
+            disabled={booking === 'loading' || booking === 'success'}
           >
             {isSelected ? "Selected" : "Select Flight"}
           </Button>
-        </div>
-      )}
+        )}
+        
+        {booking === 'idle' && (
+          <Button 
+            onClick={handleBooking}
+            className="min-w-32 bg-primary hover:bg-primary/90"
+          >
+            Book Now
+          </Button>
+        )}
+        
+        {booking === 'loading' && (
+          <Button 
+            disabled
+            className="min-w-32"
+          >
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Booking...
+          </Button>
+        )}
+        
+        {booking === 'success' && (
+          <div className="flex flex-col items-end">
+            <Button 
+              variant="outline"
+              className="min-w-32 text-green-600 border-green-600"
+              disabled
+            >
+              <Check className="mr-2 h-4 w-4" />
+              Booked
+            </Button>
+            {confirmationCode && (
+              <span className="text-xs text-muted-foreground mt-1">
+                Confirmation: {confirmationCode}
+              </span>
+            )}
+          </div>
+        )}
+        
+        {booking === 'error' && (
+          <Button 
+            onClick={handleBooking}
+            variant="outline"
+            className="min-w-32 text-destructive border-destructive hover:bg-destructive/10"
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 // Mock response for SERP API flight data
 const mockFlightResponse = {
   "best_flights": [
@@ -212,7 +211,7 @@ const mockFlightResponse = {
       "price": 1322,
       "type": "One way",
       "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
-      "booking_token": "WyJDalJJUlRReWJHUkNNbHA1YVdOQlFVMTJOVUZDUnkwdExTMHRMUzB0YjNsaVltc3hNVUZCUVVGQlIyWmlUemMwVGpORFkyMUJFaE5OVlRVek1qQjhUVlUxT0RkOFJFdzBPVEUwR2dzSXNJZ0lFQUlhQTFWVFJEZ2NjTENJQ0E9PSIsW1siQ0FOIiwiMjAyNS0wNC0yMCIsIlBWRyIsbnVsbCwiTVUiLCI1MzIwIl0sWyJQVkciLCIyMDI1LTA0LTIwIiwiSkZLIixudWxsLCJNVSIsIjU4NyJdLFsiSkZLIiwiMjAyNS0wNC0yMCIsIklORCIsbnVsbCwiREwiLCI0OTE0Il1dXQ=="
+      "booking_token": "WyJDalJJUlRReWJHUkNNbHA1YVdOQlFVMTJOVUZDUnkwdExTMHRMUzB0YjNsaVltc3hNVUZCUVVGQlIyWmlUemMwVGpORFkyMUJFaE5OVlRVek1qQjhUVlUxT0RkOFJFdzBPREF3R2dzSXNJZ0lFQUlhQTFWVFJEZ2NjTENJQ0E9PSIsW1siQ0FOIiwiMjAyNS0wNC0yMCIsIlBWRyIsbnVsbCwiQ1oiLCIzNTIwIl0sWyJQVkciLCIyMDI1LTA0LTIwIiwiSkZLIixudWxsLCJNVSIsIjU4NyJdLFsiSkZLIiwiMjAyNS0wNC0yMCIsIklORCIsbnVsbCwiREwiLCI0OTE0Il1dXQ=="
     },
     {
       "flights": [
@@ -376,14 +375,34 @@ export interface FlightData {
 
 // Function to fetch flight data (mock implementation)
 export const fetchFlightData = async (source: string, destination: string, date: Date): Promise<FlightData> => {
-  // In a real implementation, this would call the SERP API with the provided parameters
   console.log(`Fetching flight data from ${source} to ${destination} on ${date.toISOString().split('T')[0]}`);
   
-  // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1000));
   
-  // Return mock data
   return mockFlightResponse;
+};
+
+// Function to book a flight (mock implementation)
+export const bookFlight = async (bookingToken: string): Promise<{ success: boolean; confirmationCode?: string; message?: string }> => {
+  console.log(`Booking flight with token: ${bookingToken}`);
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  const isSuccess = Math.random() < 0.9;
+  
+  if (isSuccess) {
+    const confirmationCode = `BK${Math.floor(Math.random() * 10000).toString().padStart(6, '0')}`;
+    return {
+      success: true,
+      confirmationCode,
+      message: `Your flight has been successfully booked! Confirmation code: ${confirmationCode}`
+    };
+  } else {
+    return {
+      success: false,
+      message: "Unable to book the flight at this time. Please try again later."
+    };
+  }
 };
 
 // Helper function to format duration in hours and minutes
