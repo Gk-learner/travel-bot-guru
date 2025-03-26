@@ -17,7 +17,7 @@ interface ApiKeyInputProps {
   onApiKeyChange: (apiKey: string) => void;
 }
 
-const API_KEY_STORAGE_KEY = 'gemini-api-key';
+const API_KEY_STORAGE_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
   const [apiKey, setApiKey] = useState<string>('');
@@ -26,7 +26,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
 
   useEffect(() => {
     // Check if API key exists in localStorage
-    const storedKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+    const storedKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (storedKey) {
       setApiKey(storedKey);
       onApiKeyChange(storedKey);
@@ -55,7 +55,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-20">
+      {/* <div className="fixed bottom-4 right-4 z-20">
         <Button 
           variant={keyExists ? "outline" : "default"} 
           size="sm" 
@@ -65,7 +65,7 @@ const ApiKeyInput: React.FC<ApiKeyInputProps> = ({ onApiKeyChange }) => {
           <KeyRound className="h-3.5 w-3.5" />
           {keyExists ? "API Key Saved" : "Set API Key"}
         </Button>
-      </div>
+      </div> */}
 
       <Dialog open={showDialog} onOpenChange={setShowDialog}>
         <DialogContent className="sm:max-w-md">

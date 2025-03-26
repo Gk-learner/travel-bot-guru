@@ -9,12 +9,12 @@ const Header = () => {
         <div className="flex items-center space-x-2">
           <PlaneLanding className="h-6 w-6 text-primary" />
           <div className="flex flex-col sm:flex-row sm:items-center">
-            <span className="font-medium text-xl tracking-tight">TravelAI</span>
-            <span className="text-xs text-muted-foreground sm:ml-2">Powered by Gemini 1.5 Flash</span>
+            <span className="font-medium text-xl tracking-tight">Let's Travel</span>
+            {/* <span className="text-xs text-muted-foreground sm:ml-2">Powered by Gemini 1.5 Flash</span> */}
           </div>
         </div>
         
-        <nav className="hidden md:flex space-x-8">
+        {/* <nav className="hidden md:flex space-x-8">
           <a href="#" className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium">
             Home
           </a>
@@ -27,7 +27,7 @@ const Header = () => {
           <a href="#" className="text-foreground/80 hover:text-primary transition-colors text-sm font-medium">
             Contact
           </a>
-        </nav>
+        </nav> */}
       </div>
     </header>
   );

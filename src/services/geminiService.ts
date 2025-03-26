@@ -27,7 +27,7 @@ export const generateTripsWithGemini = async (
   if (!apiKey) {
     throw new Error("API key is required");
   }
-
+console.log(apiKey)
   const durationInDays = Math.ceil(
     (params.endDate.getTime() - params.startDate.getTime()) / (1000 * 60 * 60 * 24)
   );

@@ -12,7 +12,7 @@ import { ChatMessage, sendChatMessage } from '@/services/chatService';
 const Index = () => {
   const [travelData, setTravelData] = React.useState<TravelFormData | null>(null);
   const [loading, setLoading] = React.useState(false);
-  const [apiKey, setApiKey] = React.useState<string | null>(null);
+  // const [apiKey, setApiKey] = React.useState<string | null>(null);
   const [tripSuggestions, setTripSuggestions] = React.useState<TripSuggestion[]>([]);
   const [chatMessages, setChatMessages] = React.useState<ChatMessage[]>([]);
   const [chatLoading, setChatLoading] = React.useState(false);
@@ -20,9 +20,9 @@ const Index = () => {
   
   // Handle API key changes
   const handleApiKeyChange = (key: string) => {
-    setApiKey(key);
+    // setApiKey(key);
   };
-  
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   // Handle form submission
   const handleFormSubmit = async (data: TravelFormData) => {
     setLoading(true);
