@@ -1,4 +1,3 @@
-
 // Mock response generator for flight data
 const generateMockFlightData = (source: string, destination: string, date: Date): any => {
   // Generate different flight options based on destination
@@ -8,6 +7,10 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
   // Format date for flight times
   const dateStr = date.toISOString().split('T')[0];
   const baseTime = new Date(date);
+  
+  // Ensure we get diverse airlines for each option
+  const selectedAirlines = selectDiverseAirlines(3);
+  const selectedAirlineCodes = selectedAirlines.map((_, index) => airlineCodes[index % airlineCodes.length]);
   
   return {
     "best_flights": [
@@ -26,10 +29,10 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
             },
             "duration": 150,
             "airplane": "Airbus A330",
-            "airline": getRandomAirline(),
-            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png",
+            "airline": selectedAirlines[0],
+            "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[0]}.png`,
             "travel_class": "Economy",
-            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "flight_number": `${selectedAirlineCodes[0]} ${getRandomFlightNumber()}`,
             "legroom": "32 in",
             "extensions": [
               "Above average legroom (32 in)",
@@ -48,7 +51,7 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
         },
         "price": Math.floor(Math.random() * 300 + 200),
         "type": "One way",
-        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[0]}.png`,
         "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
       },
       {
@@ -66,10 +69,10 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
             },
             "duration": 120,
             "airplane": "Boeing 737",
-            "airline": getRandomAirline(),
-            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+            "airline": selectedAirlines[1],
+            "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[1]}.png`,
             "travel_class": "Economy",
-            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "flight_number": `${selectedAirlineCodes[1]} ${getRandomFlightNumber()}`,
             "legroom": "31 in",
             "extensions": [
               "Average legroom (31 in)",
@@ -91,10 +94,10 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
             },
             "duration": 120,
             "airplane": "Airbus A320",
-            "airline": getRandomAirline(),
-            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+            "airline": selectedAirlines[1],
+            "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[1]}.png`,
             "travel_class": "Economy",
-            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "flight_number": `${selectedAirlineCodes[1]} ${getRandomFlightNumber()}`,
             "legroom": "30 in",
             "extensions": [
               "Average legroom (30 in)",
@@ -119,7 +122,7 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
         },
         "price": Math.floor(Math.random() * 400 + 300),
         "type": "One way",
-        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[1]}.png`,
         "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
       },
       {
@@ -137,10 +140,10 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
             },
             "duration": 220,
             "airplane": "Boeing 777",
-            "airline": getRandomAirline(),
-            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+            "airline": selectedAirlines[2],
+            "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[2]}.png`,
             "travel_class": "Economy",
-            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "flight_number": `${selectedAirlineCodes[2]} ${getRandomFlightNumber()}`,
             "legroom": "34 in",
             "extensions": [
               "Above average legroom (34 in)",
@@ -160,11 +163,19 @@ const generateMockFlightData = (source: string, destination: string, date: Date)
         },
         "price": Math.floor(Math.random() * 600 + 400),
         "type": "One way",
-        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "airline_logo": `https://www.gstatic.com/flights/airline_logos/70px/${selectedAirlineCodes[2]}.png`,
         "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
       }
     ]
   };
+};
+
+// Helper function to select diverse airlines
+const selectDiverseAirlines = (count: number): string[] => {
+  // Shuffle the airlines array to get random airlines
+  const shuffled = [...airlines].sort(() => 0.5 - Math.random());
+  // Take the first 'count' airlines
+  return shuffled.slice(0, count);
 };
 
 // Helper functions to generate mock flight data
@@ -241,6 +252,7 @@ const getRandomConnectionAirport = () => {
   return connectionAirports[Math.floor(Math.random() * connectionAirports.length)];
 };
 
+// Update airlines array to include more major airlines
 const airlines = [
   "American Airlines",
   "Delta Air Lines",
@@ -251,10 +263,22 @@ const airlines = [
   "Lufthansa",
   "Emirates",
   "Singapore Airlines",
-  "Qatar Airways"
+  "Qatar Airways",
+  "JetBlue",
+  "Alaska Airlines",
+  "Air Canada",
+  "Turkish Airlines",
+  "KLM Royal Dutch Airlines",
+  "Japan Airlines"
 ];
 
-const airlineCodes = ["AA", "DL", "UA", "WN", "AF", "BA", "LH", "EK", "SQ", "QR"];
+// Update airline codes to match the airlines in the array
+const airlineCodes = [
+  "AA", "DL", "UA", "WN", "AF", 
+  "BA", "LH", "EK", "SQ", "QR",
+  "B6", "AS", "AC", "TK", "KL", 
+  "JL"
+];
 
 const getRandomAirline = () => {
   return airlines[Math.floor(Math.random() * airlines.length)];
