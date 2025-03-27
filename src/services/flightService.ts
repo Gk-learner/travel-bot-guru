@@ -1,326 +1,277 @@
-// Mock response for SERP API flight data
-const mockFlightResponse = {
-  "best_flights": [
-    {
-      "flights": [
-        {
-          "departure_airport": {
-            "name": "Guangzhou Baiyun International Airport",
-            "id": "CAN",
-            "time": "2025-04-20 10:30"
-          },
-          "arrival_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 13:00"
-          },
-          "duration": 150,
-          "airplane": "Airbus A330",
-          "airline": "China Southern",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png",
-          "travel_class": "Economy",
-          "flight_number": "CZ 3550",
-          "ticket_also_sold_by": [
-            "American"
-          ],
-          "legroom": "32 in",
-          "extensions": [
-            "Above average legroom (32 in)",
-            "In-seat USB outlet",
-            "On-demand video",
-            "Carbon emissions estimate: 118 kg"
-          ]
+
+// Mock response generator for flight data
+const generateMockFlightData = (source: string, destination: string, date: Date): any => {
+  // Generate different flight options based on destination
+  const destinationAirport = getDestinationAirport(destination);
+  const sourceAirport = getSourceAirport(source);
+  
+  // Format date for flight times
+  const dateStr = date.toISOString().split('T')[0];
+  const baseTime = new Date(date);
+  
+  return {
+    "best_flights": [
+      {
+        "flights": [
+          {
+            "departure_airport": {
+              "name": sourceAirport.name,
+              "id": sourceAirport.code,
+              "time": `${dateStr} ${formatTime(baseTime)}`
+            },
+            "arrival_airport": {
+              "name": destinationAirport.name,
+              "id": destinationAirport.code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 150 * 60000))}`
+            },
+            "duration": 150,
+            "airplane": "Airbus A330",
+            "airline": getRandomAirline(),
+            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png",
+            "travel_class": "Economy",
+            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "legroom": "32 in",
+            "extensions": [
+              "Above average legroom (32 in)",
+              "In-seat USB outlet",
+              "On-demand video",
+              `Carbon emissions estimate: ${Math.floor(Math.random() * 200 + 100)} kg`
+            ]
+          }
+        ],
+        "layovers": [],
+        "total_duration": 150,
+        "carbon_emissions": {
+          "this_flight": 118000,
+          "typical_for_this_route": 118000,
+          "difference_percent": 0
         },
-        {
-          "departure_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 17:00"
-          },
-          "arrival_airport": {
-            "name": "Dallas Fort Worth International Airport",
-            "id": "DFW",
-            "time": "2025-04-20 17:05"
-          },
-          "duration": 785,
-          "airplane": "Boeing 787",
-          "airline": "American",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
-          "travel_class": "Economy",
-          "flight_number": "AA 128",
-          "legroom": "31 in",
-          "extensions": [
-            "Average legroom (31 in)",
-            "Wi-Fi for a fee",
-            "In-seat power & USB outlets",
-            "On-demand video",
-            "Carbon emissions estimate: 715 kg"
-          ],
-          "overnight": true
-        },
-        {
-          "departure_airport": {
-            "name": "Dallas Fort Worth International Airport",
-            "id": "DFW",
-            "time": "2025-04-20 20:49"
-          },
-          "arrival_airport": {
-            "name": "Indianapolis International Airport",
-            "id": "IND",
-            "time": "2025-04-20 23:58"
-          },
-          "duration": 129,
-          "airplane": "Boeing 737",
-          "airline": "American",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
-          "travel_class": "Economy",
-          "flight_number": "AA 766",
-          "legroom": "30 in",
-          "extensions": [
-            "Average legroom (30 in)",
-            "Wi-Fi for a fee",
-            "In-seat power & USB outlets",
-            "Stream media to your device",
-            "Carbon emissions estimate: 112 kg"
-          ]
-        }
-      ],
-      "layovers": [
-        {
-          "duration": 240,
-          "name": "Shanghai Pudong International Airport",
-          "id": "PVG"
-        },
-        {
-          "duration": 224,
-          "name": "Dallas Fort Worth International Airport",
-          "id": "DFW"
-        }
-      ],
-      "total_duration": 1528,
-      "carbon_emissions": {
-        "this_flight": 946000,
-        "typical_for_this_route": 945000,
-        "difference_percent": 0
+        "price": Math.floor(Math.random() * 300 + 200),
+        "type": "One way",
+        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
       },
-      "price": 1206,
-      "type": "One way",
-      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
-      "booking_token": "WyJDalJJUlRReWJHUkNNbHA1YVdOQlFVMTJOVUZDUnkwdExTMHRMUzB0YjNsaVltc3hNVUZCUVVGQlIyWmlUemMwVGpORFkyMUJFaEpEV2pNMU5UQjhRVUV4TWpoOFFVRTNOallhQ3dqNXJRY1FBaG9EVlZORU9CeHcrYTBIIixbWyJDQU4iLCIyMDI1LTA0LTIwIiwiUFZHIixudWxsLCJDWiIsIjM1NTAiXSxbIlBWRyIsIjIwMjUtMDQtMjAiLCJERlciLG51bGwsIkFBIiwiMTI4Il0sWyJERlciLCIyMDI1LTA0LTIwIiwiSU5EIixudWxsLCJBQSIsIjc2NiJdXV0="
-    },
-    {
-      "flights": [
-        {
-          "departure_airport": {
-            "name": "Guangzhou Baiyun International Airport",
-            "id": "CAN",
-            "time": "2025-04-20 07:30"
+      {
+        "flights": [
+          {
+            "departure_airport": {
+              "name": sourceAirport.name,
+              "id": sourceAirport.code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 120 * 60000))}`
+            },
+            "arrival_airport": {
+              "name": getRandomConnectionAirport().name,
+              "id": getRandomConnectionAirport().code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 240 * 60000))}`
+            },
+            "duration": 120,
+            "airplane": "Boeing 737",
+            "airline": getRandomAirline(),
+            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
+            "travel_class": "Economy",
+            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "legroom": "31 in",
+            "extensions": [
+              "Average legroom (31 in)",
+              "Wi-Fi for a fee",
+              "In-seat power & USB outlets",
+              `Carbon emissions estimate: ${Math.floor(Math.random() * 200 + 100)} kg`
+            ]
           },
-          "arrival_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 09:35"
-          },
-          "duration": 125,
-          "airplane": "Airbus A320neo",
-          "airline": "China Eastern",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/MU.png",
-          "travel_class": "Economy",
-          "flight_number": "MU 5320",
-          "legroom": "30 in",
-          "extensions": [
-            "Average legroom (30 in)",
-            "In-seat power & USB outlets",
-            "Carbon emissions estimate: 115 kg"
-          ]
+          {
+            "departure_airport": {
+              "name": getRandomConnectionAirport().name,
+              "id": getRandomConnectionAirport().code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 300 * 60000))}`
+            },
+            "arrival_airport": {
+              "name": destinationAirport.name,
+              "id": destinationAirport.code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 420 * 60000))}`
+            },
+            "duration": 120,
+            "airplane": "Airbus A320",
+            "airline": getRandomAirline(),
+            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
+            "travel_class": "Economy",
+            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "legroom": "30 in",
+            "extensions": [
+              "Average legroom (30 in)",
+              "Wi-Fi for a fee",
+              "In-seat power & USB outlets",
+              `Carbon emissions estimate: ${Math.floor(Math.random() * 200 + 100)} kg`
+            ]
+          }
+        ],
+        "layovers": [
+          {
+            "duration": 60,
+            "name": getRandomConnectionAirport().name,
+            "id": getRandomConnectionAirport().code
+          }
+        ],
+        "total_duration": 300,
+        "carbon_emissions": {
+          "this_flight": 246000,
+          "typical_for_this_route": 245000,
+          "difference_percent": 0
         },
-        {
-          "departure_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 11:30"
-          },
-          "arrival_airport": {
-            "name": "John F. Kennedy International Airport",
-            "id": "JFK",
-            "time": "2025-04-20 14:25"
-          },
-          "duration": 895,
-          "airplane": "Boeing 777",
-          "airline": "China Eastern",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/MU.png",
-          "travel_class": "Economy",
-          "flight_number": "MU 587",
-          "legroom": "32 in",
-          "extensions": [
-            "Above average legroom (32 in)",
-            "Wi-Fi for a fee",
-            "In-seat power & USB outlets",
-            "On-demand video",
-            "Carbon emissions estimate: 869 kg"
-          ],
-          "overnight": true
-        },
-        {
-          "departure_airport": {
-            "name": "John F. Kennedy International Airport",
-            "id": "JFK",
-            "time": "2025-04-20 18:20"
-          },
-          "arrival_airport": {
-            "name": "Indianapolis International Airport",
-            "id": "IND",
-            "time": "2025-04-20 20:56"
-          },
-          "duration": 156,
-          "airplane": "Canadair RJ 900",
-          "airline": "Delta",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/DL.png",
-          "travel_class": "Economy",
-          "flight_number": "DL 4914",
-          "ticket_also_sold_by": [
-            "China Eastern"
-          ],
-          "legroom": "31 in",
-          "extensions": [
-            "Average legroom (31 in)",
-            "Wi-Fi for a fee",
-            "Carbon emissions estimate: 144 kg"
-          ],
-          "plane_and_crew_by": "Endeavor Air"
-        }
-      ],
-      "layovers": [
-        {
-          "duration": 115,
-          "name": "Shanghai Pudong International Airport",
-          "id": "PVG"
-        },
-        {
-          "duration": 235,
-          "name": "John F. Kennedy International Airport",
-          "id": "JFK"
-        }
-      ],
-      "total_duration": 1526,
-      "carbon_emissions": {
-        "this_flight": 1130000,
-        "typical_for_this_route": 945000,
-        "difference_percent": 20
+        "price": Math.floor(Math.random() * 400 + 300),
+        "type": "One way",
+        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
       },
-      "price": 1322,
-      "type": "One way",
-      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
-      "booking_token": "WyJDalJJUlRReWJHUkNNbHA1YVdOQlFVMTJOVUZDUnkwdExTMHRMUzB0YjNsaVltc3hNVUZCUVVGQlIyWmlUemMwVGpORFkyMUJFaE5OVlRVek1qQjhUVlUxT0RkOFJFdzBPREF3R2dzSXNJZ0lFQUlhQTFWVFJEZ2NjTENJQ0E9PSIsW1siQ0FOIiwiMjAyNS0wNC0yMCIsIlBWRyIsbnVsbCwiQ1oiLCIzNTIwIl0sWyJQVkciLCIyMDI1LTA0LTIwIiwiSkZLIixudWxsLCJNVSIsIjU4NyJdLFsiSkZLIiwiMjAyNS0wNC0yMCIsIklORCIsbnVsbCwiREwiLCI0OTE0Il1dXQ=="
-    },
-    {
-      "flights": [
-        {
-          "departure_airport": {
-            "name": "Guangzhou Baiyun International Airport",
-            "id": "CAN",
-            "time": "2025-04-20 10:30"
-          },
-          "arrival_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 13:00"
-          },
-          "duration": 150,
-          "airplane": "Airbus A330",
-          "airline": "China Southern",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/CZ.png",
-          "travel_class": "Economy",
-          "flight_number": "CZ 3550",
-          "ticket_also_sold_by": [
-            "American"
-          ],
-          "legroom": "32 in",
-          "extensions": [
-            "Above average legroom (32 in)",
-            "In-seat USB outlet",
-            "On-demand video",
-            "Carbon emissions estimate: 118 kg"
-          ]
+      {
+        "flights": [
+          {
+            "departure_airport": {
+              "name": sourceAirport.name,
+              "id": sourceAirport.code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 60 * 60000))}`
+            },
+            "arrival_airport": {
+              "name": destinationAirport.name,
+              "id": destinationAirport.code,
+              "time": `${dateStr} ${formatTime(new Date(baseTime.getTime() + 280 * 60000))}`
+            },
+            "duration": 220,
+            "airplane": "Boeing 777",
+            "airline": getRandomAirline(),
+            "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/UA.png",
+            "travel_class": "Economy",
+            "flight_number": `${getRandomAirlineCode()} ${getRandomFlightNumber()}`,
+            "legroom": "34 in",
+            "extensions": [
+              "Above average legroom (34 in)",
+              "Wi-Fi included",
+              "In-seat power & USB outlets",
+              "On-demand video",
+              `Carbon emissions estimate: ${Math.floor(Math.random() * 200 + 150)} kg`
+            ]
+          }
+        ],
+        "layovers": [],
+        "total_duration": 220,
+        "carbon_emissions": {
+          "this_flight": 180000,
+          "typical_for_this_route": 150000,
+          "difference_percent": 20
         },
-        {
-          "departure_airport": {
-            "name": "Shanghai Pudong International Airport",
-            "id": "PVG",
-            "time": "2025-04-20 17:00"
-          },
-          "arrival_airport": {
-            "name": "Dallas Fort Worth International Airport",
-            "id": "DFW",
-            "time": "2025-04-20 17:05"
-          },
-          "duration": 785,
-          "airplane": "Boeing 787",
-          "airline": "American",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
-          "travel_class": "Economy",
-          "flight_number": "AA 128",
-          "legroom": "31 in",
-          "extensions": [
-            "Average legroom (31 in)",
-            "Wi-Fi for a fee",
-            "In-seat power & USB outlets",
-            "On-demand video",
-            "Carbon emissions estimate: 715 kg"
-          ],
-          "overnight": true
-        },
-        {
-          "departure_airport": {
-            "name": "Dallas Fort Worth International Airport",
-            "id": "DFW",
-            "time": "2025-04-20 19:25"
-          },
-          "arrival_airport": {
-            "name": "Indianapolis International Airport",
-            "id": "IND",
-            "time": "2025-04-20 22:34"
-          },
-          "duration": 129,
-          "airplane": "Boeing 737",
-          "airline": "American",
-          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AA.png",
-          "travel_class": "Economy",
-          "flight_number": "AA 2800",
-          "legroom": "30 in",
-          "extensions": [
-            "Average legroom (30 in)",
-            "Wi-Fi for a fee",
-            "In-seat power & USB outlets",
-            "Stream media to your device",
-            "Carbon emissions estimate: 112 kg"
-          ]
-        }
-      ],
-      "layovers": [
-        {
-          "duration": 240,
-          "name": "Shanghai Pudong International Airport",
-          "id": "PVG"
-        },
-        {
-          "duration": 140,
-          "name": "Dallas Fort Worth International Airport",
-          "id": "DFW"
-        }
-      ],
-      "total_duration": 1444,
-      "carbon_emissions": {
-        "this_flight": 946000,
-        "typical_for_this_route": 945000,
-        "difference_percent": 0
-      },
-      "price": 1387,
-      "type": "One way",
-      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
-      "booking_token": "WyJDalJJUlRReWJHUkNNbHA1YVdOQlFVMTJOVUZDUnkwdExTMHRMUzB0YjNsaVltc3hNVUZCUVVGQlIyWmlUemMwVGpORFkyMUJFaE5EV2pNMU5UQjhRVUV4TWpoOFFVRXlPREF3R2dzSXZyc0lFQUlhQTFWVFJEZ2NjTDY3Q0E9PSIsW1siQ0FOIiwiMjAyNS0wNC0yMCIsIlBWRyIsbnVsbCwiQ1oiLCIzNTUwIl0sWyJQVkciLCIyMDI1LTA0LTIwIiwiREZXIixudWxsLCJBQSIsIjEyOCJdLFsiREZXIiwiMjAyNS0wNC0yMCIsIklORCIsbnVsbCwiQUEiLCIyODAwIl1dXQ=="
-    }
-  ]
+        "price": Math.floor(Math.random() * 600 + 400),
+        "type": "One way",
+        "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+        "booking_token": `token-${Math.random().toString(36).substring(2, 15)}`
+      }
+    ]
+  };
+};
+
+// Helper functions to generate mock flight data
+const getSourceAirport = (source: string) => {
+  // Map city names to airport info
+  const airports: Record<string, {name: string, code: string}> = {
+    "New York": { name: "John F. Kennedy International Airport", code: "JFK" },
+    "Los Angeles": { name: "Los Angeles International Airport", code: "LAX" },
+    "Chicago": { name: "O'Hare International Airport", code: "ORD" },
+    "San Francisco": { name: "San Francisco International Airport", code: "SFO" },
+    "Miami": { name: "Miami International Airport", code: "MIA" },
+    "Dallas": { name: "Dallas/Fort Worth International Airport", code: "DFW" },
+    "London": { name: "Heathrow Airport", code: "LHR" },
+    "Paris": { name: "Charles de Gaulle Airport", code: "CDG" },
+    "Tokyo": { name: "Narita International Airport", code: "NRT" },
+    "Sydney": { name: "Sydney Airport", code: "SYD" },
+  };
+  
+  // Find closest match or return default
+  const match = Object.keys(airports).find(city => 
+    source.toLowerCase().includes(city.toLowerCase())
+  );
+  
+  return match ? airports[match] : { name: `${source} Airport`, code: source.slice(0, 3).toUpperCase() };
+};
+
+const getDestinationAirport = (destination: string) => {
+  // Map city names to airport info
+  const airports: Record<string, {name: string, code: string}> = {
+    "New York": { name: "John F. Kennedy International Airport", code: "JFK" },
+    "Los Angeles": { name: "Los Angeles International Airport", code: "LAX" },
+    "Chicago": { name: "O'Hare International Airport", code: "ORD" },
+    "San Francisco": { name: "San Francisco International Airport", code: "SFO" },
+    "Miami": { name: "Miami International Airport", code: "MIA" },
+    "Dallas": { name: "Dallas/Fort Worth International Airport", code: "DFW" },
+    "London": { name: "Heathrow Airport", code: "LHR" },
+    "Paris": { name: "Charles de Gaulle Airport", code: "CDG" },
+    "Tokyo": { name: "Narita International Airport", code: "NRT" },
+    "Sydney": { name: "Sydney Airport", code: "SYD" },
+    "Las Vegas": { name: "Harry Reid International Airport", code: "LAS" },
+    "Orlando": { name: "Orlando International Airport", code: "MCO" },
+    "Hawaii": { name: "Daniel K. Inouye International Airport", code: "HNL" },
+    "Rome": { name: "Leonardo da Vinci International Airport", code: "FCO" },
+    "Barcelona": { name: "Barcelona-El Prat Airport", code: "BCN" },
+    "Amsterdam": { name: "Amsterdam Airport Schiphol", code: "AMS" },
+    "Dubai": { name: "Dubai International Airport", code: "DXB" },
+    "Bangkok": { name: "Suvarnabhumi Airport", code: "BKK" },
+    "Singapore": { name: "Singapore Changi Airport", code: "SIN" },
+    "Hong Kong": { name: "Hong Kong International Airport", code: "HKG" },
+  };
+  
+  // Find closest match or return default
+  const match = Object.keys(airports).find(city => 
+    destination.toLowerCase().includes(city.toLowerCase())
+  );
+  
+  return match ? airports[match] : { name: `${destination} Airport`, code: destination.slice(0, 3).toUpperCase() };
+};
+
+const connectionAirports = [
+  { name: "Hartsfield-Jackson Atlanta International Airport", code: "ATL" },
+  { name: "Denver International Airport", code: "DEN" },
+  { name: "Frankfurt Airport", code: "FRA" },
+  { name: "Beijing Capital International Airport", code: "PEK" },
+  { name: "Toronto Pearson International Airport", code: "YYZ" },
+  { name: "Istanbul Airport", code: "IST" },
+  { name: "Charlotte Douglas International Airport", code: "CLT" },
+  { name: "Seattle-Tacoma International Airport", code: "SEA" },
+  { name: "Munich Airport", code: "MUC" },
+  { name: "Phoenix Sky Harbor International Airport", code: "PHX" },
+];
+
+const getRandomConnectionAirport = () => {
+  return connectionAirports[Math.floor(Math.random() * connectionAirports.length)];
+};
+
+const airlines = [
+  "American Airlines",
+  "Delta Air Lines",
+  "United Airlines",
+  "Southwest Airlines",
+  "Air France",
+  "British Airways",
+  "Lufthansa",
+  "Emirates",
+  "Singapore Airlines",
+  "Qatar Airways"
+];
+
+const airlineCodes = ["AA", "DL", "UA", "WN", "AF", "BA", "LH", "EK", "SQ", "QR"];
+
+const getRandomAirline = () => {
+  return airlines[Math.floor(Math.random() * airlines.length)];
+};
+
+const getRandomAirlineCode = () => {
+  return airlineCodes[Math.floor(Math.random() * airlineCodes.length)];
+};
+
+const getRandomFlightNumber = () => {
+  return Math.floor(Math.random() * 9000 + 1000).toString();
+};
+
+const formatTime = (date: Date) => {
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 // Interface for flight data
@@ -379,7 +330,7 @@ export const fetchFlightData = async (source: string, destination: string, date:
   
   await new Promise(resolve => setTimeout(resolve, 1000));
   
-  return mockFlightResponse;
+  return generateMockFlightData(source, destination, date);
 };
 
 // Function to book a flight (mock implementation)
