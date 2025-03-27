@@ -1,4 +1,3 @@
-
 import { toast } from "@/components/ui/use-toast";
 import { SERP_API_KEY } from "@/lib/constants";
 
@@ -24,22 +23,16 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
     chatHistory.push(userMessage);
     
     // Format the conversation history for the Gemini API
-    const messages = chatHistory.map(msg => ({
+    const formattedMessages = chatHistory.map(msg => ({
       role: msg.role === "user" ? "user" : "model",
       parts: [{ text: msg.content }]
     }));
     
-    // Add system message at the beginning
-    const systemMessage = {
-      role: "system",
-      parts: [{ text: "You are a helpful travel assistant who provides specific, detailed and concise answers about travel destinations, activities, accommodations, and other travel-related questions. Focus on providing practical travel advice. Use the SERP API to search for real-time information when needed." }]
-    };
-    
     // First, get additional context using SERP API if available
     let additionalContext = "";
-    if (import.meta.env.VITE_SERP_API_KEY) {
+    if (SERP_API_KEY) {
       try {
-        const serpResponse = await fetch(`https://serpapi.com/search.json?q=${encodeURIComponent(`travel ${message}`)}&api_key=${import.meta.env.VITE_SERP_API_KEY}`);
+        const serpResponse = await fetch(`https://serpapi.com/search.json?q=${encodeURIComponent(`travel ${message}`)}&api_key=${SERP_API_KEY}`);
         
         if (serpResponse.ok) {
           const serpData = await serpResponse.json();
@@ -59,10 +52,17 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
       }
     }
     
-    // Update system message with additional context if available
+    // Add system instructions and context to the first user message
+    let promptText = message;
     if (additionalContext) {
-      systemMessage.parts[0].text += "\n\n" + additionalContext;
+      promptText = `I'm a travel assistant. Please help with this travel query: "${message}"\n\nContextual information: ${additionalContext}\n\nProvide specific, detailed and concise travel advice.`;
+    } else {
+      promptText = `I'm a travel assistant. Please help with this travel query: "${message}"\n\nProvide specific, detailed and concise travel advice.`;
     }
+    
+    // Update the first user message with the prompt text
+    const updatedMessages = [...formattedMessages];
+    updatedMessages[updatedMessages.length - 1].parts[0].text = promptText;
     
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -72,7 +72,7 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [systemMessage, ...messages],
+          contents: updatedMessages,
           generationConfig: {
             temperature: 0.7,
             topK: 40,
