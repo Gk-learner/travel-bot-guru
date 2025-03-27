@@ -36,13 +36,14 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, loading }) => {
       onSubmit(formData);
     }
   };
+
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const updateFormData = (field: keyof TravelFormData, value: unknown) => {
+  const updateFormData = (field: keyof TravelFormData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
