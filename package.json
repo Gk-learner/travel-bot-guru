@@ -1,9 +1,12 @@
 {
+  "homepage": "https://Gk-learner.github.io/travel-bot",
   "name": "vite_react_shadcn_ts",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "dev": "vite --host localhost",           
     "build": "vite build",
     "build:dev": "vite build --mode development",
@@ -79,5 +82,8 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1"
-  }
+  },
+  "devDependencies": {
+    "gh-pages": "^6.0.0"
+}
 }
