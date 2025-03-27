@@ -31,7 +31,6 @@ const TravelResults: React.FC<TravelResultsProps> = ({
   chatLoading
 }) => {
   const [showMore, setShowMore] = useState(false);
-  const [showChat, setShowChat] = useState(false);
   
   // Calculate trip summary data
   const durationInDays = Math.ceil((data.endDate.getTime() - data.startDate.getTime()) / (1000 * 60 * 60 * 24));

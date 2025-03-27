@@ -25,10 +25,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       
       <div className={`flex flex-col max-w-[80%] ${isUser ? "items-end" : "items-start"}`}>
         <div
-          className={`rounded-2xl p-3 shadow-sm transition-all duration-200 ${
+          className={`rounded-2xl p-3 shadow-sm ${
             isUser
-              ? "bg-accent text-accent-foreground"
-              : "bg-secondary/70 backdrop-blur-sm text-secondary-foreground"
+              ? "bg-primary text-primary-foreground"
+              : "bg-card/80 backdrop-blur-sm"
           }`}
         >
           {paragraphs.length > 0 ? (
@@ -47,8 +47,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       </div>
       
       {isUser && (
-        <Avatar className="h-8 w-8 ring-2 ring-accent/10">
-          <AvatarFallback className="bg-accent text-accent-foreground font-medium">U</AvatarFallback>
+        <Avatar className="h-8 w-8 ring-2 ring-primary/10">
+          <AvatarFallback className="bg-primary text-primary-foreground font-medium">U</AvatarFallback>
         </Avatar>
       )}
     </div>

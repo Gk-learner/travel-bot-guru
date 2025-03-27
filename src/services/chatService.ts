@@ -1,4 +1,6 @@
+
 import { toast } from "@/components/ui/use-toast";
+import { SERP_API_KEY } from "@/lib/constants";
 
 export type ChatMessage = {
   id: string;
@@ -30,8 +32,37 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
     // Add system message at the beginning
     const systemMessage = {
       role: "system",
-      parts: [{ text: "You are a helpful travel assistant who provides specific, detailed and concise answers about travel destinations, activities, accommodations, and other travel-related questions. Focus on providing practical travel advice." }]
+      parts: [{ text: "You are a helpful travel assistant who provides specific, detailed and concise answers about travel destinations, activities, accommodations, and other travel-related questions. Focus on providing practical travel advice. Use the SERP API to search for real-time information when needed." }]
     };
+    
+    // First, get additional context using SERP API if available
+    let additionalContext = "";
+    if (import.meta.env.VITE_SERP_API_KEY) {
+      try {
+        const serpResponse = await fetch(`https://serpapi.com/search.json?q=${encodeURIComponent(`travel ${message}`)}&api_key=${import.meta.env.VITE_SERP_API_KEY}`);
+        
+        if (serpResponse.ok) {
+          const serpData = await serpResponse.json();
+          if (serpData.organic_results && serpData.organic_results.length > 0) {
+            additionalContext = "Here's some relevant information that might help you answer:\n";
+            
+            // Add top 2 search results as context
+            for (let i = 0; i < Math.min(2, serpData.organic_results.length); i++) {
+              const result = serpData.organic_results[i];
+              additionalContext += `- ${result.title}: ${result.snippet}\n`;
+            }
+          }
+        }
+      } catch (error) {
+        console.log("SERP API error (non-critical):", error);
+        // Continue without SERP data if there's an error
+      }
+    }
+    
+    // Update system message with additional context if available
+    if (additionalContext) {
+      systemMessage.parts[0].text += "\n\n" + additionalContext;
+    }
     
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
@@ -92,4 +123,8 @@ export const sendChatMessage = async (message: string, apiKey: string): Promise<
     });
     throw error;
   }
+};
+
+export const clearChatHistory = () => {
+  chatHistory = [];
 };

@@ -6,7 +6,7 @@ import TravelResults from '@/components/TravelResults';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import ApiKeyInput from '@/components/ApiKeyInput';
 import { generateTripsWithGemini } from '@/services/geminiService';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { ChatMessage, sendChatMessage } from '@/services/chatService';
 
 const Index = () => {
@@ -22,10 +22,13 @@ const Index = () => {
   const handleApiKeyChange = (key: string) => {
     // setApiKey(key);
   };
+  
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
   // Handle form submission
   const handleFormSubmit = async (data: TravelFormData) => {
     setLoading(true);
+    setChatMessages([]);
     
     try {
       // Check if API key is available
@@ -45,14 +48,14 @@ const Index = () => {
       setTravelData(data);
       
       // Add initial assistant message to chat
-      setChatMessages([
-        {
-          id: `msg-welcome-${Date.now()}`,
-          content: "I've created some travel suggestions for you. Feel free to ask any follow-up questions about your trip!",
-          role: "assistant",
-          timestamp: new Date(),
-        }
-      ]);
+      const welcomeMessage: ChatMessage = {
+        id: `msg-welcome-${Date.now()}`,
+        content: `I've created some travel suggestions for your trip from ${data.source} to ${data.destination}. Feel free to ask any follow-up questions about your trip!`,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+      
+      setChatMessages([welcomeMessage]);
     } catch (error) {
       console.error('Error generating trips:', error);
       toast({
@@ -93,6 +96,11 @@ const Index = () => {
       setChatMessages((prev) => [...prev, response]);
     } catch (error) {
       console.error('Error sending message:', error);
+      toast({
+        title: "Error sending message",
+        description: "Failed to get a response. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setChatLoading(false);
     }
