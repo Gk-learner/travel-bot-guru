@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { MapPin, X, Loader2 } from 'lucide-react';
@@ -11,9 +10,16 @@ interface LocationInputProps {
   onChange: (value: string) => void;
 }
 
-// Enhanced location suggestions data with more countries, cities, and airports
+// Enhanced location suggestions with additional countries and broader matching
 const locationSuggestions = [
-  // Major global cities
+  // Countries
+  "Canada", "United States", "Mexico", "Brazil", "Argentina", "United Kingdom", "France", "Germany", 
+  "Italy", "Spain", "Portugal", "Netherlands", "Belgium", "Switzerland", "Austria", "Greece", 
+  "Sweden", "Norway", "Denmark", "Finland", "Russia", "China", "Japan", "South Korea", "India", 
+  "Thailand", "Vietnam", "Singapore", "Indonesia", "Australia", "New Zealand", "South Africa", 
+  "Morocco", "Egypt", "Israel", "Turkey", "United Arab Emirates", "Kenya", "Nigeria",
+  
+  // Major global cities (keeping the current extensive list)
   "New York, USA", "Los Angeles, USA", "Chicago, USA", "Houston, USA", "Miami, USA", "San Francisco, USA", "Seattle, USA", "Boston, USA", "Las Vegas, USA", "Atlanta, USA", "Dallas, USA", "Denver, USA", "Phoenix, USA", "San Diego, USA", "Austin, USA", "Philadelphia, USA", "Indianapolis, USA", "Nashville, USA", "New Orleans, USA", "Portland, USA",
   "London, UK", "Manchester, UK", "Birmingham, UK", "Edinburgh, UK", "Glasgow, UK", "Liverpool, UK", "Bristol, UK", "Brighton, UK", "Oxford, UK", "Cambridge, UK",
   "Paris, France", "Marseille, France", "Lyon, France", "Nice, France", "Bordeaux, France", "Toulouse, France", "Strasbourg, France", "Montpellier, France", "Lille, France", "Nantes, France",
@@ -67,6 +73,7 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isFocused, setIsFocused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [allowFreeInput, setAllowFreeInput] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   // Update input value when prop value changes
@@ -79,13 +86,17 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsFocused(false);
+        // When losing focus, accept the current input value even if not in suggestions
+        if (inputValue && inputValue.trim() !== value) {
+          onChange(inputValue.trim());
+        }
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [inputValue, value, onChange]);
 
   // Filter locations based on input with improved matching
   const filterLocations = (input: string) => {
@@ -140,6 +151,14 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
         .slice(0, 8); // Limit to top 8 matches
       
       setSuggestions(filteredLocations);
+      
+      // If no matches and input is meaningful, allow free input
+      if (filteredLocations.length === 0 && input.length > 2) {
+        setAllowFreeInput(true);
+      } else {
+        setAllowFreeInput(false);
+      }
+      
       setIsLoading(false);
     }, 150); // Reduced delay for better responsiveness
   };
@@ -152,6 +171,7 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
       filterLocations(newValue);
     } else {
       setSuggestions([]);
+      setAllowFreeInput(false);
     }
   };
 
@@ -160,6 +180,22 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
     onChange(suggestion);
     setSuggestions([]);
     setIsFocused(false);
+  };
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (allowFreeInput || suggestions.length > 0) {
+        // If we have a selected suggestion, use it, otherwise use the input value
+        if (suggestions.length > 0) {
+          handleSelectSuggestion(suggestions[0]);
+        } else {
+          onChange(inputValue.trim());
+          setSuggestions([]);
+          setIsFocused(false);
+        }
+      }
+    }
   };
 
   const handleClear = () => {
@@ -178,6 +214,7 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
           placeholder={placeholder}
           value={inputValue}
           onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           className={cn("pl-10 pr-10 transition-all duration-300", 
             isFocused ? "border-primary ring-1 ring-primary/20" : ""
@@ -215,8 +252,19 @@ const LocationInput: React.FC<LocationInputProps> = ({ id, placeholder, value, o
               ))}
             </ul>
           ) : (
-            <div className="p-4 text-sm text-muted-foreground">
-              No locations found. Try a different search.
+            <div className="p-4 space-y-3">
+              <p className="text-sm text-muted-foreground">
+                No exact matches found.
+              </p>
+              {allowFreeInput && (
+                <div 
+                  className="flex items-center px-4 py-2 bg-primary/10 rounded-md cursor-pointer hover:bg-primary/20 transition-colors"
+                  onClick={() => handleSelectSuggestion(inputValue)}
+                >
+                  <MapPin className="mr-2 h-4 w-4 text-primary" />
+                  <span>Use "{inputValue}"</span>
+                </div>
+              )}
             </div>
           )}
         </div>
